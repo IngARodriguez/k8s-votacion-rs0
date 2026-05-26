@@ -1,0 +1,13 @@
+{
+  "name": "votacion-page-mongo",
+  "version": "1.0.0",
+  "description": "Sistema de votación electrónica con MongoDB Replica Set",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "mongodb": "^7.2.0"
+  }
+}

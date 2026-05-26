@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mongo-init-rs
+spec:
+  backoffLimit: 6
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app: mongo-init
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: init
+        image: mongo:7
+        command:
+        - bash
+        - -c
+        - |
+          set -e
+          PRIMARY_HOST="mongo-0.mongo-svc.default.svc.cluster.local:27017"
+          echo "Esperando a que los 4 mongod respondan..."
+          for h in mongo-0.mongo-svc mongo-1.mongo-svc mongo-2.mongo-svc mongo-arb-0.mongo-arb-svc; do
+            until mongosh --quiet --host "$h" --port 27017 --eval "db.adminCommand('ping').ok" >/dev/null 2>&1; do
+              echo "  esperando $h..."; sleep 3
+            done
+            echo "  OK $h"
+          done
+
+          echo "Comprobando si rs0 ya está inicializado..."
+          ALREADY=$(mongosh --quiet --host "$PRIMARY_HOST" --eval "try { rs.status().ok } catch(e) { 0 }" || echo 0)
+          if [ "$ALREADY" = "1" ]; then
+            echo "Replica set ya inicializado. rs.status():"
+            mongosh --quiet --host "$PRIMARY_HOST" --eval "rs.status().members.forEach(function(m){ print(m.name, m.stateStr) })"
+            exit 0
+          fi
+
+          echo "Ejecutando rs.initiate(...)"
+          mongosh --quiet --host "$PRIMARY_HOST" --eval '
+            rs.initiate({
+              _id: "rs0",
+              members: [
+                { _id: 0, host: "mongo-0.mongo-svc.default.svc.cluster.local:27017", priority: 10 },
+                { _id: 1, host: "mongo-1.mongo-svc.default.svc.cluster.local:27017", priority: 1 },
+                { _id: 2, host: "mongo-2.mongo-svc.default.svc.cluster.local:27017", priority: 1 },
+                { _id: 3, host: "mongo-arb-0.mongo-arb-svc.default.svc.cluster.local:27017", arbiterOnly: true }
+              ]
+            })
+          '
+
+          echo "Esperando elección del PRIMARY..."
+          for i in $(seq 1 30); do
+            STATE=$(mongosh --quiet --host "$PRIMARY_HOST" --eval "try { rs.status().myState } catch(e) { -1 }" 2>/dev/null || echo -1)
+            if [ "$STATE" = "1" ]; then echo "PRIMARY elegido en mongo-0"; break; fi
+            sleep 2
+          done
+
+          echo "Estado final:"
+          mongosh --quiet --host "$PRIMARY_HOST" --eval "rs.status().members.forEach(function(m){ print(m.name, m.stateStr) })"

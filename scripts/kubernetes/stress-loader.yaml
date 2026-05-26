@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stress-loader
+  labels:
+    app: stress-loader
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: stress-loader
+  template:
+    metadata:
+      labels:
+        app: stress-loader
+    spec:
+      containers:
+      - name: loader
+        image: busybox:1.36
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "loader started: 2 parallel wget loops on voting-app-svc"
+          for i in 1 2; do
+            ( while true; do
+                wget -q -O /dev/null http://voting-app-svc/votos
+                wget -q -O /dev/null http://voting-app-svc/
+              done ) &
+          done
+          wait
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "16Mi"
+          limits:
+            cpu: "300m"
+            memory: "64Mi"

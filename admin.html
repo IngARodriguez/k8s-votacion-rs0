@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrativo — Registraduría Nacional</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+            background: #F2F4F7;
+            color: #1D2939;
+        }
+
+        :root {
+            --azul:      #003F7D;
+            --azul-med:  #0055A5;
+            --azul-claro:#E8F0FB;
+            --amarillo:  #FDB813;
+            --rojo:      #C8202F;
+            --blanco:    #FFFFFF;
+            --gris-bg:   #F2F4F7;
+            --gris-borde:#D0D5DD;
+            --texto:     #1D2939;
+            --texto-sub: #667085;
+        }
+
+        .banda-gov {
+            background: #001F3F;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 8px;
+        }
+        .banda-gov .govcol-logo { height: 14px; width: auto; opacity: 0.85; }
+        .banda-gov span { color: rgba(255,255,255,0.65); font-size: 0.67rem; }
+        .banda-gov .sep { color: rgba(255,255,255,0.25); }
+
+        header {
+            background: var(--azul);
+            border-bottom: 4px solid var(--amarillo);
+            padding: 0 24px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+        .logo-area { display: flex; align-items: center; gap: 16px; }
+        .logo-registraduria {
+            height: 50px;
+            width: auto;
+            display: block;
+            flex-shrink: 0;
+        }
+        .logo-separador {
+            width: 1px;
+            height: 38px;
+            background: rgba(255,255,255,0.25);
+        }
+        .logo-texto h1 {
+            font-size: 0.78rem; font-weight: 700;
+            color: rgba(255,255,255,0.95);
+            text-transform: uppercase; letter-spacing: 0.8px; line-height: 1.3;
+        }
+        .logo-texto p { font-size: 0.66rem; color: rgba(255,255,255,0.6); margin-top: 2px; }
+
+        .header-der { display: flex; align-items: center; gap: 10px; }
+        .badge-admin {
+            background: var(--rojo); color: white;
+            font-size: 0.65rem; font-weight: 700;
+            padding: 5px 12px; border-radius: 3px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-volver {
+            font-size: 0.7rem; color: rgba(255,255,255,0.75);
+            text-decoration: none; padding: 5px 10px;
+            border: 1px solid rgba(255,255,255,0.25); border-radius: 4px;
+            transition: background 0.15s;
+        }
+        .btn-volver:hover { background: rgba(255,255,255,0.1); }
+
+        .tricolor { display: flex; height: 5px; }
+        .tricolor .am { flex: 2; background: var(--amarillo); }
+        .tricolor .az { flex: 1; background: var(--azul); }
+        .tricolor .ro { flex: 1; background: var(--rojo); }
+
+        /* ── Login overlay ── */
+        #login-wrap {
+            position: fixed; inset: 0;
+            background: rgba(0,63,125,0.85);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 200;
+        }
+        .login-card {
+            background: var(--blanco);
+            border-radius: 10px;
+            padding: 36px 32px;
+            width: 320px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+        }
+        .login-card .ico { font-size: 2.2rem; margin-bottom: 10px; }
+        .login-card h2 { font-size: 1rem; color: var(--azul); margin-bottom: 4px; }
+        .login-card p  { font-size: 0.75rem; color: var(--texto-sub); margin-bottom: 20px; }
+        .login-card input {
+            width: 100%; padding: 9px 12px;
+            border: 1.5px solid var(--gris-borde); border-radius: 5px;
+            font-size: 0.88rem; font-family: inherit;
+            margin-bottom: 10px;
+        }
+        .login-card input:focus { outline: none; border-color: var(--azul-med); }
+        .btn-login {
+            width: 100%; padding: 10px;
+            background: var(--azul); color: white;
+            border: none; border-radius: 5px;
+            font-size: 0.9rem; font-weight: 700; font-family: inherit;
+            cursor: pointer;
+        }
+        .btn-login:hover { background: var(--azul-med); }
+        .error-login { color: var(--rojo); font-size: 0.78rem; margin-top: 8px; min-height: 18px; }
+
+        /* ── Stats bar ── */
+        .stats-bar {
+            background: var(--azul);
+            padding: 10px 24px;
+            display: flex;
+            gap: 32px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .stat { text-align: center; }
+        .stat .val { font-size: 1.4rem; font-weight: 700; color: var(--amarillo); }
+        .stat .lbl { font-size: 0.6rem; color: rgba(255,255,255,0.65); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* ── Contenido principal ── */
+        .contenido {
+            height: calc(100vh - 26px - 72px - 4px - 46px - 30px);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 16px 24px 0;
+            gap: 12px;
+        }
+
+        .barra-tabla {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .barra-tabla h2 { font-size: 0.85rem; font-weight: 700; color: var(--azul); text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-refrescar {
+            padding: 7px 14px;
+            background: var(--blanco);
+            border: 1px solid var(--gris-borde);
+            border-radius: 5px;
+            font-size: 0.78rem; font-family: inherit;
+            cursor: pointer; color: var(--texto);
+        }
+        .btn-refrescar:hover { background: var(--gris-bg); }
+
+        .tabla-wrap {
+            flex: 1;
+            overflow-y: auto;
+            border-radius: 7px;
+            border: 1px solid var(--gris-borde);
+            background: var(--blanco);
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+        thead { position: sticky; top: 0; background: var(--azul); z-index: 1; }
+        thead th {
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: rgba(255,255,255,0.85);
+            white-space: nowrap;
+        }
+        tbody tr { border-bottom: 1px solid #F2F4F7; transition: background 0.1s; }
+        tbody tr:hover { background: var(--azul-claro); }
+        tbody tr:last-child { border-bottom: none; }
+        td { padding: 10px 14px; vertical-align: middle; }
+
+        .badge-voto {
+            display: inline-block;
+            background: var(--azul-claro);
+            border: 1px solid #b3c9e8;
+            color: var(--azul);
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 0.73rem;
+            font-weight: 500;
+            max-width: 240px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .badge-voto.blanco {
+            background: #f5f5f5; border-color: #ccc; color: #888;
+        }
+        .cedula-td { font-family: monospace; font-size: 0.78rem; color: var(--texto-sub); }
+        .num-td { font-size: 0.75rem; color: #bbb; width: 32px; text-align: center; }
+
+        .btn-eliminar {
+            padding: 4px 10px;
+            background: transparent;
+            color: var(--rojo);
+            border: 1px solid var(--rojo);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+        .btn-eliminar:hover { background: var(--rojo); color: white; }
+
+        .vacio { text-align: center; padding: 40px; color: var(--texto-sub); font-size: 0.85rem; }
+
+        footer {
+            height: 30px;
+            background: var(--azul);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem; color: rgba(255,255,255,0.55);
+            letter-spacing: 0.3px;
+        }
+    </style>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Login overlay -->
+<div id="login-wrap">
+    <div class="login-card">
+        <div class="ico" aria-hidden="true">RNEC</div>
+        <h2>Panel Administrativo</h2>
+        <p>Acceso restringido — Registraduría Nacional del Estado Civil</p>
+        <input type="text"     id="login-user" placeholder="Usuario" autocomplete="off" />
+        <input type="password" id="login-pass" placeholder="Contraseña"
+               onkeydown="if(event.key==='Enter') login()" />
+        <button class="btn-login" onclick="login()">Ingresar</button>
+        <p class="error-login" id="error-login"></p>
+    </div>
+</div>
+
+<!-- Banda GOV.CO -->
+<div class="banda-gov">
+    <img class="govcol-logo"
+         src="https://www.gov.co/files/images/logo-gov-co-blanco.svg"
+         onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'🇨🇴 Colombia.gov.co'}))"
+         alt="Colombia.gov.co" />
+    <span class="sep">|</span>
+    <span>República de Colombia — Gobierno Nacional</span>
+</div>
+
+<!-- Header -->
+<header>
+    <div class="logo-area">
+        <img class="logo-registraduria"
+             src="icons/fondos_oscuros.svg"
+             alt="Registraduría Nacional del Estado Civil" />
+        <div class="logo-separador"></div>
+        <div class="logo-texto">
+            <h1>Panel de Administración — Sistema de Votación</h1>
+            <p>Registraduría Nacional del Estado Civil — República de Colombia</p>
+        </div>
+    </div>
+    <div class="header-der">
+        <span class="badge-admin">Administrador</span>
+        <a href="index.html" class="btn-volver">← Votación</a>
+    </div>
+</header>
+
+<!-- Franja tricolor -->
+<div class="tricolor">
+    <div class="am"></div>
+    <div class="az"></div>
+    <div class="ro"></div>
+</div>
+
+<!-- Stats -->
+<div class="stats-bar">
+    <div class="stat"><div class="val" id="stat-total">—</div><div class="lbl">Total votos</div></div>
+    <div class="stat"><div class="val" id="stat-c1">—</div><div class="lbl">Felipe Morales</div></div>
+    <div class="stat"><div class="val" id="stat-c2">—</div><div class="lbl">Lucía Bermúdez</div></div>
+    <div class="stat"><div class="val" id="stat-c3">—</div><div class="lbl">Andrés Ospina</div></div>
+    <div class="stat"><div class="val" id="stat-c4">—</div><div class="lbl">Sandra Vargas</div></div>
+    <div class="stat"><div class="val" id="stat-blanco">—</div><div class="lbl">Voto en Blanco</div></div>
+</div>
+
+<!-- Contenido -->
+<div class="contenido">
+    <div class="barra-tabla">
+        <h2>Registro de votos</h2>
+        <button class="btn-refrescar" onclick="cargarVotos()">↻ Actualizar</button>
+    </div>
+
+    <div class="tabla-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Cédula</th>
+                    <th>Edad</th>
+                    <th>Voto</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="tbody-votos">
+                <tr><td colspan="7" class="vacio">Ingrese para cargar los datos.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<footer>
+    República de Colombia &nbsp;|&nbsp; Registraduría Nacional del Estado Civil &nbsp;|&nbsp;
+    Sistema Electrónico de Votación — Elecciones 2026 &nbsp;|&nbsp; NIT 800.210.115-4
+</footer>
+
+<script>
+    const USUARIO_ADMIN = 'admin';
+    const CLAVE_ADMIN   = 'registraduria2026';
+
+    function login() {
+        const u = document.getElementById('login-user').value;
+        const p = document.getElementById('login-pass').value;
+        if (u === USUARIO_ADMIN && p === CLAVE_ADMIN) {
+            document.getElementById('login-wrap').style.display = 'none';
+            cargarVotos();
+        } else {
+            document.getElementById('error-login').textContent = 'Credenciales incorrectas.';
+        }
+    }
+
+    async function cargarVotos() {
+        const res   = await fetch('/votos');
+        const votos = await res.json();
+        calcularStats(votos);
+        renderTabla(votos);
+    }
+
+    function calcularStats(votos) {
+        document.getElementById('stat-total').textContent = votos.length;
+        const c = { c1:0, c2:0, c3:0, c4:0, b:0 };
+        votos.forEach(v => {
+            if      (!v.voto)                           return;
+            else if (v.voto.includes('Felipe Morales')) c.c1++;
+            else if (v.voto.includes('Lucía Bermúdez')) c.c2++;
+            else if (v.voto.includes('Andrés Felipe'))  c.c3++;
+            else if (v.voto.includes('Sandra Milena'))  c.c4++;
+            else if (v.voto === 'Voto en Blanco')       c.b++;
+        });
+        document.getElementById('stat-c1').textContent     = c.c1;
+        document.getElementById('stat-c2').textContent     = c.c2;
+        document.getElementById('stat-c3').textContent     = c.c3;
+        document.getElementById('stat-c4').textContent     = c.c4;
+        document.getElementById('stat-blanco').textContent = c.b;
+    }
+
+    function renderTabla(votos) {
+        const tbody = document.getElementById('tbody-votos');
+        if (!votos.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="vacio">No hay votos registrados.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = votos.map((v, i) => `
+            <tr>
+                <td class="num-td">${i + 1}</td>
+                <td>${esc(v.nombre)}</td>
+                <td>${esc(v.apellido)}</td>
+                <td class="cedula-td">${esc(v.cedula)}</td>
+                <td>${v.edad}</td>
+                <td>
+                    <span class="badge-voto ${v.voto === 'Voto en Blanco' ? 'blanco' : ''}"
+                          title="${esc(v.voto)}">${esc(v.voto)}</span>
+                </td>
+                <td>
+                    <button class="btn-eliminar" onclick="eliminar('${v._id}')">Eliminar</button>
+                </td>
+            </tr>`).join('');
+    }
+
+    async function eliminar(id) {
+        if (!confirm('¿Confirma la eliminación permanente de este voto?')) return;
+        await fetch(`/votos/${id}`, { method: 'DELETE' });
+        cargarVotos();
+    }
+
+    function esc(s) {
+        if (!s) return '';
+        return String(s)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+</script>
+
+</body>
+</html>

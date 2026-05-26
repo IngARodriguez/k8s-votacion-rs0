@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Votación Electrónica — Registraduría Nacional</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+            background: #f0f2f5;
+            color: #1a1a1a;
+        }
+
+        :root {
+            --azul:      #003F7D;
+            --azul-med:  #0055A5;
+            --azul-claro:#E8F0FB;
+            --amarillo:  #FDB813;
+            --rojo:      #C8202F;
+            --verde:     #027A48;
+            --verde-bg:  #ECFDF3;
+            --verde-borde:#6CE9A6;
+            --blanco:    #FFFFFF;
+            --gris-bg:   #F2F4F7;
+            --gris-borde:#D0D5DD;
+            --texto:     #1D2939;
+            --texto-sub: #667085;
+        }
+
+        /* ── Banda GOV.CO ── */
+        .banda-gov {
+            background: #001F3F;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 8px;
+        }
+        .banda-gov .govcol-logo { height: 14px; width: auto; opacity: 0.85; }
+        .banda-gov span { color: rgba(255,255,255,0.65); font-size: 0.67rem; }
+        .banda-gov .sep { color: rgba(255,255,255,0.25); }
+
+        /* ── Header ── */
+        header {
+            background: var(--azul);
+            border-bottom: 4px solid var(--amarillo);
+            padding: 0 24px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+        .logo-area { display: flex; align-items: center; gap: 16px; }
+        .logo-registraduria { height: 50px; width: auto; display: block; flex-shrink: 0; }
+        .logo-separador { width: 1px; height: 38px; background: rgba(255,255,255,0.25); }
+        .logo-texto h1 {
+            font-size: 0.78rem; font-weight: 700;
+            color: rgba(255,255,255,0.95);
+            text-transform: uppercase; letter-spacing: 0.8px; line-height: 1.3;
+        }
+        .logo-texto p { font-size: 0.66rem; color: rgba(255,255,255,0.6); margin-top: 2px; }
+        .header-derecha { display: flex; align-items: center; gap: 12px; }
+        .chip-eleccion {
+            background: rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.9);
+            font-size: 0.67rem; font-weight: 700;
+            padding: 5px 12px; border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.25);
+            text-transform: uppercase; letter-spacing: 0.6px;
+        }
+        .btn-admin-link {
+            font-size: 0.7rem; color: rgba(255,255,255,0.75);
+            text-decoration: none; padding: 5px 10px;
+            border: 1px solid rgba(255,255,255,0.25); border-radius: 4px;
+            transition: background 0.15s;
+        }
+        .btn-admin-link:hover { background: rgba(255,255,255,0.1); }
+
+        /* ── Tricolor ── */
+        .tricolor { display: flex; height: 4px; }
+        .tricolor .am { flex: 2; background: var(--amarillo); }
+        .tricolor .az { flex: 1; background: var(--azul); }
+        .tricolor .ro { flex: 1; background: var(--rojo); }
+
+        /* ── Aviso ── */
+        .aviso {
+            background: #FFF8E1;
+            border-bottom: 1px solid #F5D78B;
+            padding: 5px 16px;
+            font-size: 0.7rem; color: #5C4400;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .aviso svg { flex-shrink: 0; }
+
+        /* ── Layout sin scroll ── */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            height: calc(100vh - 26px - 72px - 4px - 27px - 30px);
+            overflow: hidden;
+        }
+
+        /* ── Panel izquierdo ── */
+        .panel-izq {
+            background: var(--blanco);
+            border-right: 1px solid var(--gris-borde);
+            padding: 18px 20px;
+            display: flex; flex-direction: column; gap: 10px;
+            overflow: hidden;
+        }
+        .panel-titulo {
+            font-size: 0.7rem; font-weight: 700;
+            color: var(--azul); text-transform: uppercase; letter-spacing: 1px;
+            padding-bottom: 8px; border-bottom: 2px solid var(--azul);
+        }
+        .campo { display: flex; flex-direction: column; gap: 3px; }
+        .campo label {
+            font-size: 0.68rem; font-weight: 500;
+            color: var(--texto-sub); text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .campo input {
+            border: 1.5px solid var(--gris-borde); border-radius: 5px;
+            padding: 8px 10px; font-size: 0.88rem; font-family: inherit;
+            color: var(--texto); transition: border-color 0.15s; background: var(--blanco);
+        }
+        .campo input:focus { outline: none; border-color: var(--azul-med); box-shadow: 0 0 0 3px rgba(0,85,165,0.1); }
+        .campo input:disabled { background: var(--gris-bg); color: #aaa; cursor: not-allowed; }
+
+        .btn-votar {
+            margin-top: auto; width: 100%; padding: 11px;
+            background: var(--azul); color: var(--blanco);
+            border: none; border-radius: 6px;
+            font-size: 0.88rem; font-weight: 700; font-family: inherit;
+            letter-spacing: 0.5px; text-transform: uppercase;
+            cursor: pointer; transition: background 0.15s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-votar:hover:not(:disabled) { background: var(--azul-med); }
+        .btn-votar:disabled { background: #aaa; cursor: not-allowed; }
+
+        /* ── Panel derecho ── */
+        .panel-der {
+            background: var(--gris-bg);
+            padding: 14px 18px;
+            display: flex; flex-direction: column; gap: 10px;
+            overflow: hidden;
+        }
+
+        /* ── Candidatos ── */
+        .candidatos-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            flex: 1;
+            overflow: hidden;
+        }
+        .candidato {
+            background: var(--blanco);
+            border: 2px solid var(--gris-borde);
+            border-radius: 7px; padding: 12px;
+            cursor: pointer; transition: all 0.15s;
+            position: relative; display: flex; flex-direction: column; gap: 3px;
+            user-select: none;
+        }
+        .candidato:hover:not(.bloqueado) { border-color: var(--azul-med); background: var(--azul-claro); }
+        .candidato.seleccionado { border-color: var(--azul); background: var(--azul-claro); box-shadow: 0 0 0 3px rgba(0,63,125,0.15); }
+        .candidato.bloqueado { cursor: not-allowed; opacity: 0.65; }
+        .cand-num { font-size: 1.5rem; font-weight: 900; color: var(--azul); line-height: 1; }
+        .cand-partido { font-size: 0.6rem; font-weight: 500; color: var(--texto-sub); text-transform: uppercase; letter-spacing: 0.4px; }
+        .cand-nombre { font-size: 0.78rem; font-weight: 700; color: var(--texto); line-height: 1.2; }
+        .cand-check {
+            position: absolute; top: 8px; right: 8px;
+            width: 20px; height: 20px;
+            border: 2px solid var(--gris-borde); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .cand-check svg { display: none; }
+        .candidato.seleccionado .cand-check { background: var(--azul); border-color: var(--azul); }
+        .candidato.seleccionado .cand-check svg { display: block; }
+        .candidato-blanco { border-style: dashed; }
+        .candidato-blanco .cand-num { color: #bbb; font-size: 1.1rem; }
+
+        /* ── Panel pregunta (¿desea cambiar?) ── */
+        #panel-pregunta {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+            justify-content: center;
+        }
+        .pregunta-card {
+            background: var(--blanco);
+            border: 1.5px solid var(--gris-borde);
+            border-radius: 10px;
+            padding: 24px 20px;
+            display: flex; flex-direction: column; align-items: center;
+            gap: 14px; text-align: center;
+        }
+        .pregunta-card .ico-check {
+            width: 52px; height: 52px;
+            background: var(--verde-bg);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .pregunta-card h4 { font-size: 1rem; font-weight: 700; color: var(--texto); }
+        .pregunta-card .voto-reg {
+            background: var(--azul-claro);
+            border: 1px solid #b3c9e8;
+            color: var(--azul);
+            font-size: 0.8rem; font-weight: 600;
+            padding: 6px 16px; border-radius: 20px;
+        }
+        .pregunta-card p { font-size: 0.82rem; color: var(--texto-sub); }
+        .pregunta-botones {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+            width: 100%;
+        }
+        .btn-no {
+            padding: 11px; background: var(--verde-bg);
+            color: var(--verde); border: 1.5px solid var(--verde-borde);
+            border-radius: 6px; font-size: 0.85rem; font-weight: 700;
+            font-family: inherit; cursor: pointer; transition: all 0.15s;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .btn-no:hover { background: #d1fae5; }
+        .btn-si {
+            padding: 11px; background: #FFF8E1;
+            color: #5C4400; border: 1.5px solid var(--amarillo);
+            border-radius: 6px; font-size: 0.85rem; font-weight: 700;
+            font-family: inherit; cursor: pointer; transition: all 0.15s;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .btn-si:hover { background: #FFF0B3; }
+
+        /* ── Panel cambio (contador + confirmar) ── */
+        #panel-cambio {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .contador-box {
+            display: flex; align-items: center; gap: 12px;
+            background: #FFFBEA; border: 1.5px solid var(--amarillo);
+            border-radius: 7px; padding: 12px 14px;
+        }
+        .contador-box .ico-clock { color: #92650a; flex-shrink: 0; }
+        .contador-box .txt { flex: 1; font-size: 0.78rem; color: #5C4400; }
+        #contador-display {
+            font-size: 2rem; font-weight: 900; color: var(--azul);
+            min-width: 50px; text-align: center; font-variant-numeric: tabular-nums;
+        }
+        #contador-display.urgente { color: var(--rojo); animation: blink 0.7s infinite; }
+        @keyframes blink { 50% { opacity: 0.35; } }
+
+        .seleccion-actual {
+            background: var(--blanco); border: 1px solid var(--gris-borde);
+            border-radius: 7px; padding: 10px 14px;
+            font-size: 0.8rem; color: var(--texto-sub);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .seleccion-actual strong { color: var(--azul); }
+
+        .btn-confirmar-cambio {
+            padding: 11px; background: var(--azul); color: white;
+            border: none; border-radius: 6px;
+            font-size: 0.85rem; font-weight: 700; font-family: inherit;
+            cursor: pointer; transition: background 0.15s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-confirmar-cambio:hover:not(:disabled) { background: var(--azul-med); }
+        .btn-confirmar-cambio:disabled { background: #aaa; cursor: not-allowed; }
+
+        /* ── Pantalla gracias ── */
+        #pantalla-gracias {
+            display: none;
+            position: fixed; inset: 0;
+            background: var(--blanco);
+            flex-direction: column; align-items: center; justify-content: center;
+            gap: 14px; text-align: center; padding: 40px; z-index: 100;
+        }
+        .ico-gracias {
+            width: 80px; height: 80px;
+            background: var(--azul-claro);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #pantalla-gracias h2 { font-size: 1.8rem; color: var(--azul); font-weight: 700; }
+        #pantalla-gracias p { font-size: 0.92rem; color: var(--texto-sub); max-width: 420px; }
+        .voto-chip {
+            background: var(--azul-claro); border: 1.5px solid var(--azul);
+            color: var(--azul); font-weight: 700; font-size: 0.9rem;
+            padding: 8px 22px; border-radius: 20px;
+        }
+        .codigo { font-size: 0.72rem; color: #bbb; font-family: monospace; }
+        .tricolor-gracias {
+            display: flex; height: 6px; width: 120px;
+            border-radius: 3px; overflow: hidden; margin-top: 2px;
+        }
+        .tricolor-gracias .a { flex: 2; background: var(--amarillo); }
+        .tricolor-gracias .b { flex: 1; background: var(--azul); }
+        .tricolor-gracias .c { flex: 1; background: var(--rojo); }
+
+        /* ── Footer ── */
+        footer {
+            height: 30px; background: var(--azul);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem; color: rgba(255,255,255,0.6);
+            letter-spacing: 0.3px; gap: 8px;
+        }
+        footer span { opacity: 0.35; }
+    </style>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Banda GOV.CO -->
+<div class="banda-gov">
+    <img class="govcol-logo"
+         src="https://www.gov.co/files/images/logo-gov-co-blanco.svg"
+         onerror="this.style.display='none'"
+         alt="Colombia.gov.co" />
+    <span class="sep">|</span>
+    <span>República de Colombia — Gobierno Nacional</span>
+</div>
+
+<!-- Header -->
+<header>
+    <div class="logo-area">
+        <img class="logo-registraduria"
+             src="icons/fondos_oscuros.svg"
+             alt="Registraduría Nacional del Estado Civil" />
+        <div class="logo-separador"></div>
+        <div class="logo-texto">
+            <h1>Sistema Electrónico de Votación</h1>
+            <p>Registraduría Nacional del Estado Civil — República de Colombia</p>
+        </div>
+    </div>
+    <div class="header-derecha">
+        <span class="chip-eleccion">Elecciones 2026</span>
+        <a href="admin.html" class="btn-admin-link">Panel Admin</a>
+    </div>
+</header>
+
+<!-- Tricolor -->
+<div class="tricolor"><div class="am"></div><div class="az"></div><div class="ro"></div></div>
+
+<!-- Aviso -->
+<div class="aviso">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92650a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+    Su voto es <strong>secreto, libre e igualitario</strong>. Tendrá 1 minuto para corregir su elección si lo desea.&nbsp; |&nbsp; Línea gratuita: <strong>01 8000 111 666</strong>
+</div>
+
+<!-- Grid principal -->
+<div class="main-grid">
+
+    <!-- Izquierda: Identificación -->
+    <div class="panel-izq">
+        <div class="panel-titulo">Identificación del votante</div>
+
+        <div class="campo">
+            <label>Nombre</label>
+            <input type="text" id="nombre" placeholder="Ej: Carlos Andrés" />
+        </div>
+        <div class="campo">
+            <label>Apellido</label>
+            <input type="text" id="apellido" placeholder="Ej: Ramírez Torres" />
+        </div>
+        <div class="campo">
+            <label>Número de Cédula</label>
+            <input type="text" id="cedula" placeholder="Ej: 1023456789" maxlength="12" />
+        </div>
+        <div class="campo">
+            <label>Edad</label>
+            <input type="number" id="edad" placeholder="Ej: 34" min="18" max="120" />
+        </div>
+
+        <button class="btn-votar" id="btn-votar" onclick="registrarVoto()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Registrar Voto
+        </button>
+    </div>
+
+    <!-- Derecha: Tarjeta electoral -->
+    <div class="panel-der">
+        <div class="panel-titulo" id="titulo-der">Tarjeta Electoral — Seleccione su candidato</div>
+
+        <!-- Candidatos -->
+        <div class="candidatos-grid" id="candidatos-grid">
+
+            <div class="candidato" data-voto="Partido Unión Nacional - Felipe Morales Reyes" onclick="seleccionarCandidato(this)">
+                <div class="cand-check">
+                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg>
+                </div>
+                <div class="cand-num">1</div>
+                <div class="cand-partido">Partido Unión Nacional</div>
+                <div class="cand-nombre">Felipe Morales Reyes</div>
+            </div>
+
+            <div class="candidato" data-voto="Movimiento Democrático - Lucía Bermúdez Castro" onclick="seleccionarCandidato(this)">
+                <div class="cand-check">
+                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg>
+                </div>
+                <div class="cand-num">2</div>
+                <div class="cand-partido">Movimiento Democrático</div>
+                <div class="cand-nombre">Lucía Bermúdez Castro</div>
+            </div>
+
+            <div class="candidato" data-voto="Alianza Social Verde - Andrés Felipe Ospina" onclick="seleccionarCandidato(this)">
+                <div class="cand-check">
+                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg>
+                </div>
+                <div class="cand-num">3</div>
+                <div class="cand-partido">Alianza Social Verde</div>
+                <div class="cand-nombre">Andrés Felipe Ospina</div>
+            </div>
+
+            <div class="candidato" data-voto="Frente Ciudadano - Sandra Milena Vargas" onclick="seleccionarCandidato(this)">
+                <div class="cand-check">
+                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg>
+                </div>
+                <div class="cand-num">4</div>
+                <div class="cand-partido">Frente Ciudadano</div>
+                <div class="cand-nombre">Sandra Milena Vargas</div>
+            </div>
+
+            <div class="candidato candidato-blanco" data-voto="Voto en Blanco" onclick="seleccionarCandidato(this)">
+                <div class="cand-check">
+                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg>
+                </div>
+                <div class="cand-num" style="font-size:1rem; color:#bbb;">□</div>
+                <div class="cand-partido">Sin candidato</div>
+                <div class="cand-nombre">Voto en Blanco</div>
+            </div>
+
+        </div>
+
+        <!-- Panel: ¿Desea cambiar su voto? -->
+        <div id="panel-pregunta">
+            <div class="pregunta-card">
+                <div class="ico-check">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#027A48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                </div>
+                <h4>Voto registrado exitosamente</h4>
+                <div class="voto-reg" id="texto-voto-pregunta">—</div>
+                <p>¿Desea revisar o cambiar su voto?</p>
+                <div class="pregunta-botones">
+                    <button class="btn-no" onclick="responder(false)">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        No, confirmar
+                    </button>
+                    <button class="btn-si" onclick="responder(true)">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                        Sí, deseo cambiarlo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel: Cambiar voto (contador activo) -->
+        <div id="panel-cambio">
+            <div class="contador-box">
+                <svg class="ico-clock" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <div class="txt">Tiempo restante para cambiar su voto:</div>
+                <div id="contador-display">60</div>
+            </div>
+            <div class="seleccion-actual">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--azul)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+                Voto actual: <strong id="texto-voto-actual">—</strong>
+            </div>
+            <button class="btn-confirmar-cambio" id="btn-confirmar-cambio" onclick="confirmarCambio()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Confirmar nuevo voto
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<!-- Footer -->
+<footer>
+    <span>República de Colombia</span>
+    Registraduría Nacional del Estado Civil &nbsp;|&nbsp;
+    Sistema Electrónico de Votación — Elecciones 2026
+    <span>|</span> NIT 800.210.115-4
+</footer>
+
+<!-- Pantalla de gracias -->
+<div id="pantalla-gracias">
+    <div class="ico-gracias">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--azul)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+        </svg>
+    </div>
+    <div class="tricolor-gracias"><div class="a"></div><div class="b"></div><div class="c"></div></div>
+    <h2>¡Gracias por votar!</h2>
+    <p>Su participación es fundamental para la democracia colombiana.<br>Su voto ha sido registrado y contabilizado de forma segura.</p>
+    <div class="voto-chip" id="texto-voto-final">—</div>
+    <p style="font-size:0.78rem;">Voto registrado a las <strong id="hora-voto"></strong></p>
+    <p class="codigo">Código de verificación: <span id="codigo-verificacion"></span></p>
+</div>
+
+<script>
+    let votoId    = null;
+    let intervalo = null;
+    let segundos  = 60;
+
+    function seleccionarCandidato(el) {
+        if (el.classList.contains('bloqueado')) return;
+        document.querySelectorAll('.candidato').forEach(c => c.classList.remove('seleccionado'));
+        el.classList.add('seleccionado');
+    }
+
+    function getVotoSeleccionado() {
+        const sel = document.querySelector('.candidato.seleccionado');
+        return sel ? sel.dataset.voto : null;
+    }
+
+    function bloquearCampos() {
+        ['nombre','apellido','cedula','edad'].forEach(id => {
+            document.getElementById(id).disabled = true;
+        });
+        document.getElementById('btn-votar').disabled = true;
+    }
+
+    async function registrarVoto() {
+        const nombre   = document.getElementById('nombre').value.trim();
+        const apellido = document.getElementById('apellido').value.trim();
+        const cedula   = document.getElementById('cedula').value.trim();
+        const edad     = parseInt(document.getElementById('edad').value);
+        const voto     = getVotoSeleccionado();
+
+        if (!nombre || !apellido || !cedula || !edad || !voto) {
+            alert('Por favor complete todos los campos y seleccione un candidato.');
+            return;
+        }
+        if (isNaN(edad) || edad < 18) {
+            alert('Debe ser mayor de edad (mínimo 18 años) para votar.');
+            return;
+        }
+
+        const res  = await fetch('/votos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre, apellido, cedula, edad, voto })
+        });
+        const data = await res.json();
+        votoId = data.insertedId;
+
+        bloquearCampos();
+        document.querySelectorAll('.candidato').forEach(c => c.classList.add('bloqueado'));
+
+        // Ocultar candidatos, mostrar pregunta
+        document.getElementById('candidatos-grid').style.display = 'none';
+        document.getElementById('texto-voto-pregunta').textContent = voto;
+        document.getElementById('panel-pregunta').style.display = 'flex';
+        document.getElementById('titulo-der').textContent = 'Confirmación de voto';
+    }
+
+    function responder(desea) {
+        if (!desea) {
+            // No quiere cambiar → cerrar
+            cerrarVotacion();
+            return;
+        }
+
+        // Sí quiere cambiar → mostrar candidatos desbloqueados + panel cambio
+        document.getElementById('panel-pregunta').style.display = 'none';
+        document.getElementById('titulo-der').textContent = 'Seleccione su nuevo candidato';
+
+        // Desbloquear candidatos y mostrar grid
+        document.querySelectorAll('.candidato').forEach(c => c.classList.remove('bloqueado'));
+        document.getElementById('candidatos-grid').style.display = 'grid';
+
+        // Mostrar panel de cambio
+        document.getElementById('texto-voto-actual').textContent = getVotoSeleccionado() || '—';
+        document.getElementById('panel-cambio').style.display = 'flex';
+
+        iniciarContador();
+    }
+
+    function iniciarContador() {
+        segundos = 60;
+        renderContador();
+        intervalo = setInterval(() => {
+            segundos--;
+            renderContador();
+            if (segundos <= 10) document.getElementById('contador-display').classList.add('urgente');
+            if (segundos <= 0)  { clearInterval(intervalo); cerrarVotacion(); }
+        }, 1000);
+    }
+
+    function renderContador() {
+        document.getElementById('contador-display').textContent =
+            (segundos < 10 ? '0' : '') + segundos;
+    }
+
+    async function confirmarCambio() {
+        const voto = getVotoSeleccionado();
+        if (!voto) { alert('Seleccione un candidato primero.'); return; }
+
+        const btn = document.getElementById('btn-confirmar-cambio');
+        btn.disabled = true;
+        btn.textContent = 'Guardando...';
+
+        await fetch(`/votos/${votoId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ voto })
+        });
+
+        document.getElementById('texto-voto-actual').textContent = voto;
+        // Bloquear candidatos de nuevo tras confirmar
+        document.querySelectorAll('.candidato').forEach(c => c.classList.add('bloqueado'));
+
+        btn.innerHTML = `
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Voto actualizado
+        `;
+
+        setTimeout(() => {
+            clearInterval(intervalo);
+            cerrarVotacion();
+        }, 1800);
+    }
+
+    function cerrarVotacion() {
+        clearInterval(intervalo);
+        const ahora = new Date();
+        document.getElementById('hora-voto').textContent =
+            ahora.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('texto-voto-final').textContent = getVotoSeleccionado() || '';
+        document.getElementById('codigo-verificacion').textContent =
+            'COL2026-' + Math.random().toString(36).substring(2, 11).toUpperCase();
+        document.getElementById('pantalla-gracias').style.display = 'flex';
+    }
+</script>
+
+</body>
+</html>
