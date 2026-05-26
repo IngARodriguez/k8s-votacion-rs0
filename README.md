@@ -716,6 +716,6 @@ voting-app/
 
 ## Créditos
 
-- App original de votación: Simulacion pagina de votacion / Materia: Sistemas Distribuidos UNIMAYOR [IngARodriguez/mongo-replica-rs0](https://github.com/IngARodriguez/votacion_page_mongo_shell)
+- App original de votación: Simulacion pagina de votacion / Materia: Sistemas Distribuidos UNIMAYOR [IngARodriguez/votacion_page_mongo_shell](https://github.com/IngARodriguez/votacion_page_mongo_shell)
 - Replica set local de referencia: [IngARodriguez/mongo-replica-rs0](https://github.com/IngARodriguez/mongo-replica-rs0)
 - Adaptación a Kubernetes + scripts de operación: este repo
