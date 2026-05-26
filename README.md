@@ -13,9 +13,8 @@ App web de votación (Node.js + Express + MongoDB) desplegada en **Kubernetes** 
 5. [Operar el cluster con los scripts](#5-operar-el-cluster-con-los-scripts)
 6. [Visualizar los datos con MongoDB Compass](#6-visualizar-los-datos-con-mongodb-compass)
 7. [Pruebas de estrés y autoescalado](#7-pruebas-de-estrés-y-autoescalado)
-8. [Guion de demostración](#8-guion-de-demostración)
-9. [Limpieza](#9-limpieza)
-10. [Troubleshooting](#10-troubleshooting)
+8. [Limpieza](#8-limpieza)
+9. [Troubleshooting](#9-troubleshooting)
 
 ---
 
