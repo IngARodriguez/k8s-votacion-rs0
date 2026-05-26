@@ -504,80 +504,7 @@ El scale-down lento es **intencional**: evita "flapping" si la carga oscila.
 
 ---
 
-## 8. Guion de demostración
-
-Flujo recomendado para una presentación de 10–15 minutos:
-
-### A. Mostrar el cluster en pie (1 min)
-
-```powershell
-cd scripts\mongo
-.\estado.ps1
-```
-
-Resaltar:
-- 4 nodos Mongo, todos Ready, con sus roles (PRIMARY/SECONDARY/ARBITER)
-- 2 réplicas de la app
-- HPA con CPU al ~3%
-
-### B. Demo de replicación (3 min)
-
-1. Abrir 3 ventanas de Compass:
-
-   ```powershell
-   .\encender-nodo1.ps1   # :27017 PRIMARY
-   .\encender-nodo2.ps1   # :27018 SECONDARY
-   .\encender-nodo3.ps1   # :27019 SECONDARY
-   ```
-
-2. En la app web (URL del `minikube service`), votar.
-
-3. Refrescar la colección `test_db > votos` en las 3 ventanas de Compass:
-   → **el mismo documento aparece en los 3 nodos**
-
-### C. Demo de tolerancia a fallos (3 min)
-
-```powershell
-.\estado.ps1                  # mongo-0 es PRIMARY
-.\apagar-nodo1.ps1            # tumbamos el PRIMARY
-.\estado.ps1                  # mongo-0 X NotReady, mongo-1 es ahora PRIMARY
-```
-
-- En Compass: la ventana del :27017 muestra "connection lost"
-- Insertar un voto desde la app → **sigue funcionando** (el nuevo PRIMARY recibe la escritura)
-
-```powershell
-.\encender-nodo1.ps1          # devolvemos mongo-0
-.\estado.ps1                  # mongo-0 vuelve a ser PRIMARY (priority 10)
-```
-
-### D. Demo de autoescalado (3 min)
-
-Terminal A:
-```powershell
-cd scripts\kubernetes
-.\estado-vivo.ps1
-```
-
-Terminal B:
-```powershell
-.\stress-4.ps1
-# esperar 30 s, ver subir a ~4 réplicas
-.\stress-10.ps1
-# esperar 30-60 s, ver llegar a 10
-.\stop-stress.ps1
-# ver bajar a 2 (después de 2 min)
-```
-
-### E. Cierre
-
-```powershell
-.\estado.ps1                  # todo verde, sistema vuelve al baseline
-```
-
----
-
-## 9. Limpieza
+## 8. Limpieza
 
 ### Borrar solo los recursos de la app (sin tocar el cluster)
 
@@ -605,7 +532,7 @@ minikube delete
 
 ---
 
-## 10. Troubleshooting
+## 9. Troubleshooting
 
 ### `minikube start` se queda colgado descargando
 
